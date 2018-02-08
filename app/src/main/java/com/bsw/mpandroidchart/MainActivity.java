@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.bsw.mpandroidchart.base.activity.BaseActivity;
+import com.bsw.mpandroidchart.ui.LineChartActivity;
 import com.bsw.mpandroidchart.ui.PieChartActivity;
 
 public class MainActivity extends BaseActivity {
@@ -26,7 +27,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void formatViews() {
-        setOnClickListener(R.id.pie_chart);
+        setOnClickListener(R.id.pie_chart,R.id.line_chart);
     }
 
     @Override
@@ -44,6 +45,10 @@ public class MainActivity extends BaseActivity {
         switch (v.getId()) {
             case R.id.pie_chart:
                 jumpTo(PieChartActivity.class);
+                break;
+
+            case R.id.line_chart:
+                jumpTo(LineChartActivity.class);
                 break;
         }
     }

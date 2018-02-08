@@ -75,7 +75,8 @@ public class PieChartActivity extends BaseActivity implements OnChartValueSelect
 
     private void initPieChart() {
         mChart.setUsePercentValues(true);
-        mChart.getDescription().setEnabled(true);
+        // 是否有饼状图描述文本
+        mChart.getDescription().setEnabled(false);
         // 设置图表外，布局内显示的偏移量
         mChart.setExtraOffsets(5, 10, 5, 5);
 
@@ -217,7 +218,6 @@ public class PieChartActivity extends BaseActivity implements OnChartValueSelect
     }
 
     private SpannableString generateCenterSpannableText() {
-
         SpannableString s = new SpannableString("MPAndroidChart\ndeveloped by Philipp Jahoda");
         s.setSpan(new RelativeSizeSpan(1.7f), 0, 14, 0);
         s.setSpan(new StyleSpan(Typeface.NORMAL), 14, s.length() - 15, 0);
