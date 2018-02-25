@@ -14,13 +14,16 @@ import com.bsw.mpandroidchart.MyMarkerView;
 import com.bsw.mpandroidchart.R;
 import com.bsw.mpandroidchart.base.activity.BaseActivity;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
@@ -33,6 +36,9 @@ import java.util.ArrayList;
 public class LineChartActivity extends BaseActivity implements OnChartValueSelectedListener, OnChartGestureListener {
 
     private LineChart lineChart;
+    protected String[] values = new String[]{
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,16 +104,38 @@ public class LineChartActivity extends BaseActivity implements OnChartValueSelec
 //        llXAxis.enableDashedLine(10f, 10f, 0f);
 //        llXAxis.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
 //        llXAxis.setTextSize(10f);
-//
-//        XAxis xAxis = lineChart.getXAxis();
-//        xAxis.enableGridDashedLine(10f, 10f, 0f);
-//        xAxis.addLimitLine(llXAxis); // add x-axis limit line
 
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setEnabled(true);//显示X轴
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);//X轴位置
+        xAxis.setDrawGridLines(true);//设置x轴上每个点对应的线
+        xAxis.setDrawLabels(true);//绘制标签  指x轴上的对应数值
+        xAxis.setDrawAxisLine(true);//是否绘制轴线
+        xAxis.enableGridDashedLine(10f, 10f, 0f);
+        xAxis.setTextSize(10f);//设置字体
+        xAxis.setTextColor(Color.BLACK);//设置字体颜色
+        /*
+         * 图表将避免第一个和最后一个标签条目被减掉在图表或屏幕的边缘
+         * 设置超出部分会向里缩，可能导致与相邻坐标说明堆叠
+         */
+//        xAxis.setAvoidFirstLastClipping(true);
+        xAxis.setLabelCount(12);// 设置横坐标数量
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                /*
+                 * 设置横坐标显示样式
+                 * 将获取到的value四舍五入，如果直接强转会导致月份重复，其他情况需要具体问题具体分析
+                 */
+                return values[(int) Math.rint(value) % values.length];
+            }
+        });
+//        xAxis.addLimitLine(llXAxis); // add x-axis limit line
 
         Typeface tf = Typeface.createFromAsset(getAssets(), "OpenSans-Regular.ttf");
 
         // 限制线（值以及说明文本）
-        LimitLine ll1 = new LimitLine(150f, "Upper Limit");
+        LimitLine ll1 = new LimitLine(80f, "Upper Limit");
         // 线宽
         ll1.setLineWidth(4f);
         // 虚线样式（实线长度、间隔长度、偏移量）
@@ -128,14 +156,31 @@ public class LineChartActivity extends BaseActivity implements OnChartValueSelec
 
         // Y轴的左边界线获取
         YAxis leftAxis = lineChart.getAxisLeft();
+        /*
+         * getAxisLeft会根据边界线上下限（setAxisMaximum、setAxisMinimum）范围显示，而getAxisRight则不会，同时不显示限制线（LimitLine），而是根据所要显示的数据展示范围
+         * 不知是当前包的问题，还是设置的源码的问题
+         */
+//        YAxis leftAxis = lineChart.getAxisRight();
         // 移除所有限制线
         leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
         // 添加限制线
         leftAxis.addLimitLine(ll1);
         leftAxis.addLimitLine(ll2);
         // 设置边界线上下限
-        leftAxis.setAxisMaximum(200f);
-        leftAxis.setAxisMinimum(-50f);
+        leftAxis.setAxisMaximum(100f);
+        leftAxis.setAxisMinimum(0f);
+        // 纵坐标数量
+        leftAxis.setLabelCount(10);
+        leftAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                /*
+                 * 设置纵坐标显示样式
+                 */
+                return value + "%";
+            }
+        });
+
         // 设置边界线偏移量
         //leftAxis.setYOffset(20f);
 
@@ -154,14 +199,14 @@ public class LineChartActivity extends BaseActivity implements OnChartValueSelec
         //lineChart.getViewPortHandler().setMaximumScaleX(2f);
 
         // add data
-        setData(45, 100);
+        setData(values.length, 100);
 
 //        lineChart.setVisibleXRange(20);
 //        lineChart.setVisibleYRange(20f, AxisDependency.LEFT);
 //        lineChart.centerViewTo(20, 50, AxisDependency.LEFT);
 
         // 生成表格时的动画时长
-        lineChart.animateX(2500);
+        lineChart.animateX(1000);
         //lineChart.invalidate();
 
         // get the legend (only possible after setting data)
@@ -176,9 +221,10 @@ public class LineChartActivity extends BaseActivity implements OnChartValueSelec
 
     /**
      * 是否添加表格描述
+     *
      * @param enabled 是否添加
      */
-    private void setDescription(boolean enabled){
+    private void setDescription(boolean enabled) {
         Description description = lineChart.getDescription();
         // 折线图是否添加描述
         description.setEnabled(enabled);
@@ -203,6 +249,7 @@ public class LineChartActivity extends BaseActivity implements OnChartValueSelec
 
     /**
      * 参数设置
+     *
      * @param count 点数
      * @param range 随机数范围
      */
@@ -212,8 +259,10 @@ public class LineChartActivity extends BaseActivity implements OnChartValueSelec
 
         for (int i = 0; i < count; i++) {
 
-            float val = (float) (Math.random() * range) + 3;
-            values.add(new Entry(i, val, getResources().getDrawable(R.drawable.star)));
+//            float val = (float) (Math.random() * range) + 3;
+//            values.add(new Entry(i, val, getResources().getDrawable(R.drawable.star)));
+
+            values.add(new Entry(i, range = range - 5, getResources().getDrawable(R.drawable.star)));
         }
 
         LineDataSet set1;
